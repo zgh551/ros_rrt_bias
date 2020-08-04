@@ -7,9 +7,12 @@
 #include "ompl/tools/config/SelfConfig.h"
 #include "ompl/datastructures/NearestNeighbors.h"
 #include "ompl/geometric/planners/PlannerIncludes.h"
+#include <memory>
+#include <memory>
 #include <ompl/base/PlannerStatus.h>
 #include <ompl/base/PlannerTerminationCondition.h>
 #include <ompl/base/State.h>
+#include <ompl/base/StateSampler.h>
 #include <ompl/base/StateSpaceTypes.h>
 #include <ompl/base/StateValidityChecker.h>
 
@@ -79,6 +82,28 @@ namespace ompl
                          */
                         Motion *parent{nullptr};
                 };
+
+                /*
+                 * @brief: The state sampler
+                 */
+                base::StateSamplerPtr sampler_;
+
+                /*
+                 * @brief: A nearest-neighbors datastructure containing the
+                 * tree of motions
+                 */
+                std::shared_ptr<NearestNeighbors<Motion *>> nn_;
+
+                /*
+                 * @brief: The random number generator
+                 */
+                RNG rng_;
+
+                /*
+                 * @brief: The most recent goal motion. Used for PlannnerData
+                 * Computation
+                 */
+                Motion *lastGoalMotion_{nullptr};
         };
     }
 }
