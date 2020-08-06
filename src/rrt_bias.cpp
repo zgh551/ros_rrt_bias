@@ -1,15 +1,9 @@
-#include "../include/rrt_bias/rrt_bias.h"
+// rrt
+//
 #include <limits>
-#include <memory>
-#include <ompl/base/GoalTypes.h>
-#include <ompl/base/PlannerStatus.h>
-#include <ompl/base/PlannerTerminationCondition.h>
-#include <ompl/base/State.h>
-#include <ompl/base/StateValidityChecker.h>
-#include <ompl/geometric/PathGeometric.h>
 #include <ompl/tools/config/SelfConfig.h>
-#include <ompl/util/Console.h>
-#include <vector>
+#include <ompl/base/goals/GoalSampleableRegion.h>
+#include "../include/rrt_bias.h"
 
 ompl::geometric::RRT_Bias::RRT_Bias(const base::SpaceInformationPtr &si)
     : base::Planner(si, "RRT Bias")

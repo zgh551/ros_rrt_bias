@@ -1,10 +1,8 @@
 #ifndef _OMPL_RRT_BIAS_H_
 #define _OMPL_RRT_BIAS_H_
 
-#include "ompl/datastructures/NearestNeighbors.h"
-#include "ompl/geometric/planners/PlannerIncludes.h"
-#include "ompl/tools/config/SelfConfig.h"
-#include "ompl/base/goals/GoalSampleableRegion.h"
+#include <ompl/datastructures/NearestNeighbors.h>
+#include <ompl/geometric/planners/PlannerIncludes.h>
 
 
 //#include <memory>

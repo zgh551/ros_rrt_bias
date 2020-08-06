@@ -3,7 +3,7 @@ project(rrt_bias)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++14)
-set(MAKE_EXPORT_COMPILE_COMMANDS ON)
+## set(MAKE_EXPORT_COMPILE_COMMANDS ON)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -14,10 +14,20 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/rrt_bias.cpp
+    )
+set(HEADERS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/rrt_bias.h
+    )
+
+
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(ompl)
+find_package(ompl REQUIRED)
 
-
+if(NOT OMPL_FOUND)
+    message(AUTHOR_WARNING, "Open Motion Planning Library not found")
+endif(NOT OMPL_FOUND)
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -117,7 +127,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
   ${OPML_INCLUDE_DIRS}
 )
@@ -135,7 +145,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/rrt_bias_node.cpp)
+add_executable(${PROJECT_NAME}_node src/rrt_bias_node.cpp ${HEADERS} ${SOURCES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
