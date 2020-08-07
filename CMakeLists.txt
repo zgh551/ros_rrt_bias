@@ -28,6 +28,7 @@ find_package(ompl REQUIRED)
 if(NOT OMPL_FOUND)
     message(AUTHOR_WARNING, "Open Motion Planning Library not found")
 endif(NOT OMPL_FOUND)
+##message(AUTHOR_WARNING, "%s", ${OPML_INCLUDE_DIRS})
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -129,7 +130,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${OPML_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -146,7 +147,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node src/rrt_bias_node.cpp ${HEADERS} ${SOURCES})
-
+##${HEADERS} ${SOURCES})
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
