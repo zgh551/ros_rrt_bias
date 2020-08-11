@@ -4,6 +4,7 @@
 #include <limits>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>
+#include <ros/rate.h>
 #include <ros/time.h>
 #include "../include/rrt_bias.h"
 
@@ -69,12 +70,13 @@ void ompl::geometric::RRT_Bias::freeMemory()
 
 ompl::base::PlannerStatus ompl::geometric::RRT_Bias::solve(const base::PlannerTerminationCondition &ptc)
 {
+    ros::Rate time_r(10);
     checkValidity();
 
     // base on the problem define,get the goal handle
     base::Goal *goal = pdef_->getGoal().get();
     // the goal sampler region
-    // auto *goal_smp = dynamic_cast<base::GoalSampleableRegion *>(goal);
+    auto *goal_smp = dynamic_cast<base::GoalSampleableRegion *>(goal);
 
     // get the input state 
     while (const base::State *st = pis_.nextStart())
@@ -109,8 +111,16 @@ ompl::base::PlannerStatus ompl::geometric::RRT_Bias::solve(const base::PlannerTe
 
     while (!ptc)
     {
+        time_r.sleep();
         // sample random state
-        sampler_->sampleUniform(rnd_state);
+        if ((goal_smp != nullptr) && rng_.uniform01() < goalBias_ && goal_smp->canSample())
+        {
+            goal_smp->sampleGoal(rnd_state);
+        }
+        else
+        {
+            sampler_->sampleUniform(rnd_state);
+        }
 
         // find closest state in the tree
         Motion *nn_motion = nn_->nearest(rnd_motion);
@@ -129,6 +139,8 @@ ompl::base::PlannerStatus ompl::geometric::RRT_Bias::solve(const base::PlannerTe
         // avoidance checker
         if (si_->checkMotion(nn_motion->state, d_state))
         {
+            _sampling_point_visualize.publishPoints(d_state);
+            _sampling_point_visualize.publishPoint(d_state);
             /*
              * @brief Step1: Add new motion to the nearest neighbors tree
              */
@@ -223,6 +235,7 @@ ompl::base::PlannerStatus ompl::geometric::RRT_Bias::solve(const base::PlannerTe
      */
     // the 'x_state' is allocate by the si_->allocate() function,so need to use
     // the si_->freestate()function to free the memory
+    _sampling_point_visualize.clear();
     si_->freeState(x_state);
     if (rnd_motion->state != nullptr)
     {

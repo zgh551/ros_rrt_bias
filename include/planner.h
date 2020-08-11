@@ -107,6 +107,11 @@ namespace RRT_planner
         ros::Publisher pose_array_pub;
 
         /*
+         * @brief the path to publisher
+         */
+        ros::Publisher path_state_pub;
+
+        /*
          * @brief the start position line strip
          */
         visualization_msgs::Marker _start_pose_line_strip;

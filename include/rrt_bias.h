@@ -1,12 +1,20 @@
 #ifndef _OMPL_RRT_BIAS_H_
 #define _OMPL_RRT_BIAS_H_
 
-#include <nav_msgs/Path.h>
-
-#include <ompl/datastructures/NearestNeighbors.h>
-#include <ompl/geometric/planners/PlannerIncludes.h>
+/*
+ * @brief ROS
+ */
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
+#include <nav_msgs/Path.h>
+
+/*
+ * @brief OMPL lib
+ */
+#include <ompl/datastructures/NearestNeighbors.h>
+#include <ompl/geometric/planners/PlannerIncludes.h>
+
+#include "../include/visualize.h"
 
 
 //#include <memory>
@@ -151,6 +159,8 @@ namespace ompl
                  * @brief the sample point array
                  */
                 nav_msgs::Path _sampling_point_array;
+
+                RRT_planner::Visualize _sampling_point_visualize;
         };
     }
 }

@@ -7,7 +7,10 @@
 
 // the tf
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Path.h>
 #include <ompl/base/ScopedState.h>
+#include <ompl/geometric/PathGeometric.h>
 #include <ros/time.h>
 #include <tf/transform_datatypes.h>
 
@@ -37,12 +40,14 @@ RRT_planner::Planner::Planner(void)
     _start_pose_line_strip.header.frame_id = 
     _goal_pose_line_strip.header.frame_id  =
     _sample_point.header.frame_id =
+    _plan_path.header.frame_id = 
     "map";
 
 
     _start_pose_line_strip.header.stamp = 
     _goal_pose_line_strip.header.stamp  =
     _sample_point.header.stamp = 
+    _plan_path.header.stamp = 
     ros::Time::now();
 
      _start_pose_line_strip.ns = "start_pose_line_strip";
@@ -72,7 +77,9 @@ RRT_planner::Planner::Planner(void)
     _goal_pose_line_strip.color.a = 1.0;
 
     line_marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 100);
-    pose_array_pub = n.advertise<geometry_msgs::PoseArray>("pose_array", 100);
+    pose_array_pub = n.advertise<geometry_msgs::PoseArray>("sampling_points", 100);
+
+    path_state_pub = n.advertise<nav_msgs::Path>("plan_path", 100);
     // TODO 
     start_pose_sub = n.subscribe("initialpose", 1, &RRT_planner::Planner::StartPoseCallback, this);
     goal_pose_sub  = n.subscribe("move_base_simple/goal", 1, &RRT_planner::Planner::GoalPoseCallback, this);
@@ -97,7 +104,8 @@ void RRT_planner::Planner::Init(void)
     obstacle_boundary.setHigh(0, BOUNDARY);
     obstacle_boundary.setHigh(1, BOUNDARY);
 
-    _state_space = std::make_shared<ob::ReedsSheppStateSpace>(5.0);
+    //_state_space = std::make_shared<ob::ReedsSheppStateSpace>(5.0);
+    _state_space = std::make_shared<ob::SE2StateSpace>();
     _state_space->as<ob::SE2StateSpace>()->setBounds(obstacle_boundary);
 
     _si = std::make_shared<ob::SpaceInformation>(_state_space);
@@ -136,19 +144,39 @@ void RRT_planner::Planner::solve(const double time)
 
         if (solved)
         {
+            /*
+             * @brief Step1: the solution path state points
+             */
             _sample_point.poses.clear();
             geometry_msgs::Pose pose_temp;
             for (auto &state : _ss->getSolutionPath().getStates())
             {
                 const auto *SE2_state = state->as<ob::SE2StateSpace::StateType>();
-                pose_temp.position.x = SE2_state->getX();
-                pose_temp.position.y = SE2_state->getY();
-                tf::quaternionTFToMsg(tf::createQuaternionFromYaw(SE2_state->getYaw()), 
-                                                                pose_temp.orientation);
-
+                pose_temp.position.x  = SE2_state->getX();
+                pose_temp.position.y  = SE2_state->getY();
+                pose_temp.orientation = tf::createQuaternionMsgFromYaw(SE2_state->getYaw());
                 _sample_point.poses.push_back(pose_temp);
             }
             pose_array_pub.publish(_sample_point);
+
+            /*
+             * @brief Step2: base on the solution path points,interpolate the
+             * full path with small step lenght
+             */
+            og::PathGeometric path_state = _ss->getSolutionPath();
+
+            // using the solution path to interpolate the state
+            path_state.interpolate(1000);
+            geometry_msgs::PoseStamped pose_stamp;
+            _plan_path.poses.clear();
+            for (auto &state : path_state.getStates())
+            {
+                auto *SE2_state = state->as<ob::SE2StateSpace::StateType>();
+                pose_stamp.pose.position.x = SE2_state->getX();
+                pose_stamp.pose.position.y = SE2_state->getY();
+                _plan_path.poses.push_back(pose_stamp);
+            }
+            path_state_pub.publish(_plan_path);
         }
         else 
         {
