@@ -1,8 +1,12 @@
 #ifndef _OMPL_RRT_BIAS_H_
 #define _OMPL_RRT_BIAS_H_
 
+#include <nav_msgs/Path.h>
+
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/geometric/planners/PlannerIncludes.h>
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
 
 
 //#include <memory>
@@ -134,6 +138,19 @@ namespace ompl
                  */
                 double goalBias_{.05};
 
+                /*
+                 * @brief the node handle
+                 */
+                ros::NodeHandle _n;
+                /*
+                 * @brief the pose point array publisher
+                 */
+                ros::Publisher _sampling_point_pose_pub;
+
+                /*
+                 * @brief the sample point array
+                 */
+                nav_msgs::Path _sampling_point_array;
         };
     }
 }

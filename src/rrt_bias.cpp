@@ -1,8 +1,10 @@
 // rrt
 //
+#include <geometry_msgs/PoseArray.h>
 #include <limits>
 #include <ompl/tools/config/SelfConfig.h>
 #include <ompl/base/goals/GoalSampleableRegion.h>
+#include <ros/time.h>
 #include "../include/rrt_bias.h"
 
 ompl::geometric::RRT_Bias::RRT_Bias(const base::SpaceInformationPtr &si)
@@ -11,6 +13,10 @@ ompl::geometric::RRT_Bias::RRT_Bias(const base::SpaceInformationPtr &si)
     specs_.approximateSolutions = true;
     specs_.directed = true;
 
+    _sampling_point_array.header.frame_id = "map";
+    _sampling_point_array.header.stamp = ros::Time::now();
+
+    _sampling_point_pose_pub = _n.advertise<geometry_msgs::PoseArray>("pose_array", 100);
 }
 
 ompl::geometric::RRT_Bias::~RRT_Bias()
