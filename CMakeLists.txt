@@ -11,14 +11,20 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rrt_bias.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/planner.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/obstacle_checker.cpp
     )
 set(HEADERS 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/rrt_bias.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/planner.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/obstacle_checker.h
     )
 
 
