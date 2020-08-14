@@ -17,7 +17,7 @@
 #include <geometry_msgs/PoseArray.h>
 // the path in rviz
 #include <nav_msgs/Path.h>
-
+#include <nav_msgs/OccupancyGrid.h>
 /*
  * @brief OMPL lib
  */
@@ -73,6 +73,11 @@ namespace RRT_planner
         void solve(const double time);
 
         /*
+         * @brief The callback function map receive
+         */
+        void MapCallback(const nav_msgs::OccupancyGrid::Ptr map);
+
+        /*
          * @brief The callback function of start pose
          */
         void StartPoseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose);
@@ -86,6 +91,11 @@ namespace RRT_planner
          * @brief the node handle  
          */
         ros::NodeHandle n;
+
+        /*
+         * @brief the map subscriber
+         */
+        ros::Subscriber map_sub;
 
         /*
          * @brief the subscriber for receive the start update
@@ -144,6 +154,16 @@ namespace RRT_planner
          * @brief The simple setup pointer
          */
         og::SimpleSetupPtr _ss;
+
+        /*
+         * @brief The height of map
+         */
+        double _map_height;
+
+        /*
+         * @brief The width of map
+         */
+        
 
         /*
          * @brief start position

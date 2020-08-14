@@ -81,6 +81,8 @@ RRT_planner::Planner::Planner(void)
 
     path_state_pub = n.advertise<nav_msgs::Path>("plan_path", 100);
     // TODO 
+    map_sub        = n.advertise("map",)
+
     start_pose_sub = n.subscribe("initialpose", 1, &RRT_planner::Planner::StartPoseCallback, this);
     goal_pose_sub  = n.subscribe("move_base_simple/goal", 1, &RRT_planner::Planner::GoalPoseCallback, this);
 }
@@ -185,6 +187,14 @@ void RRT_planner::Planner::solve(const double time)
         _ss->clear();
         _goal_valid = false;
     }
+}
+
+/*
+ * @brief the callback function for 
+ */
+void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
+{
+    
 }
 
 /*
