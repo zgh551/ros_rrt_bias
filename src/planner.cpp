@@ -76,15 +76,19 @@ RRT_planner::Planner::Planner(void)
     _goal_pose_line_strip.color.g = 1.0;
     _goal_pose_line_strip.color.a = 1.0;
 
+    /*
+     * @brief The publisher
+     */
     line_marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 100);
     pose_array_pub = n.advertise<geometry_msgs::PoseArray>("sampling_points", 100);
-
     path_state_pub = n.advertise<nav_msgs::Path>("plan_path", 100);
-    // TODO 
-    map_sub        = n.advertise("map",)
-
+    /*
+     * @brief The subscribe
+     */
+    map_sub        = n.subscribe("map", 1, &RRT_planner::Planner::MapCallback, this);
     start_pose_sub = n.subscribe("initialpose", 1, &RRT_planner::Planner::StartPoseCallback, this);
     goal_pose_sub  = n.subscribe("move_base_simple/goal", 1, &RRT_planner::Planner::GoalPoseCallback, this);
+
 }
 
 RRT_planner::Planner::~Planner(void)
@@ -194,7 +198,16 @@ void RRT_planner::Planner::solve(const double time)
  */
 void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
 {
-    
+     _map_height = map->info.height;   
+     _map_width  = map->info.width;
+     
+    for (uint16_t i = 0; i < _map_height; i++)
+    {
+       for (uint16_t j = 0; j < _map_width; j++) 
+       {
+           ROS_INFO("%d ", map->data[i * _map_width + j]);
+       }
+    }
 }
 
 /*

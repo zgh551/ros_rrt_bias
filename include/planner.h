@@ -141,6 +141,7 @@ namespace RRT_planner
          */
         nav_msgs::Path _plan_path;
 
+        nav_msgs::OccupancyGrid _cost_map[36];
         /*
          * @brief The Space information
          */
@@ -163,7 +164,7 @@ namespace RRT_planner
         /*
          * @brief The width of map
          */
-        
+        double _map_width;        
 
         /*
          * @brief start position
