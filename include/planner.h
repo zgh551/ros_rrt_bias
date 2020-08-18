@@ -31,7 +31,7 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/spaces/ReedsSheppStateSpace.h>
 
-
+#include <fftw3.h>
 /*
  * @brief the namespace
  */
@@ -41,7 +41,8 @@ namespace og = ompl::geometric;
 /*
  * @brief the micro define
  */
-#define BOUNDARY    (10)
+#define BOUNDARY_SIZE_X    (20)
+#define BOUNDARY_SIZE_Y    (20)
 
 typedef struct _position
 {
@@ -71,6 +72,11 @@ namespace RRT_planner
          * @brief The solve of planner
          */
         void solve(const double time);
+
+        /*
+         * @brief Base on the circle draw the rectangle
+         */
+        void DrawCircle(double r);
 
         /*
          * @brief The callback function map receive
@@ -122,6 +128,11 @@ namespace RRT_planner
         ros::Publisher path_state_pub;
 
         /*
+         * @brief The occupancy grid publisher
+         */
+        ros::Publisher grid_map_pub;
+
+        /*
          * @brief the start position line strip
          */
         visualization_msgs::Marker _start_pose_line_strip;
@@ -141,7 +152,16 @@ namespace RRT_planner
          */
         nav_msgs::Path _plan_path;
 
-        nav_msgs::OccupancyGrid _cost_map[36];
+        /*
+         * @brief The Disk occupancy map
+         */
+        nav_msgs::OccupancyGrid _disk_occ_map;
+
+        /*
+         * @brief The obstacle occupancy map
+         */
+        nav_msgs::OccupancyGrid _obstacle_occ_map;
+
         /*
          * @brief The Space information
          */
@@ -159,12 +179,37 @@ namespace RRT_planner
         /*
          * @brief The height of map
          */
-        double _map_height;
+        uint16_t _map_height;
 
         /*
          * @brief The width of map
          */
-        double _map_width;        
+        uint16_t _map_width;        
+
+        /*
+         * @brief The size of map
+         */
+        uint16_t _map_size;
+
+        /*
+         * @brief The origin x axis of map
+         */
+        int16_t _origin_x;
+
+        /*
+         * @brief The origin y axis of map
+         */
+        int16_t _origin_y;
+
+        /*
+         * @brief Disk grid map
+         */
+        int8_t _disk_grid_map[400];
+
+        /*
+         * @brief Obstacle grid map
+         */
+        int8_t _obstacle_grid_map[400];
 
         /*
          * @brief start position
