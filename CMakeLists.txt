@@ -36,6 +36,11 @@ find_package(ompl REQUIRED)
 if(NOT OMPL_FOUND)
     message(AUTHOR_WARNING, "Open Motion Planning Library not found")
 endif(NOT OMPL_FOUND)
+
+find_package(FFTW3 REQUIRED)
+if(NOT FFTW3_FOUND)
+    message(AUTHOR_WARNING, "The FFTW Library not found!")
+endif(NOT FFTW3_FOUND)
 ##message(AUTHOR_WARNING, "%s", ${OPML_INCLUDE_DIRS})
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -139,6 +144,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
+  ${FFTW3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -170,6 +176,7 @@ add_executable(${PROJECT_NAME}_node src/rrt_bias_node.cpp ${HEADERS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   ${OMPL_LIBRARIES}
+  ${FFTW3_LIBRARIES}
 )
 
 #############
