@@ -7,6 +7,7 @@
 
 // the tf
 #include <algorithm>
+#include <fftw3.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
@@ -42,6 +43,7 @@ RRT_planner::Planner::Planner(void)
     _map_width  = BOUNDARY_SIZE_X;
     _map_height = BOUNDARY_SIZE_Y;
     _map_size   = BOUNDARY_SIZE_X * BOUNDARY_SIZE_Y;
+    _map_sum_size =  _map_size ;
 
     _origin_x = static_cast<int16_t>(-BOUNDARY_SIZE_X * 0.5);
     _origin_y = static_cast<int16_t>(-BOUNDARY_SIZE_Y * 0.5);
@@ -51,6 +53,7 @@ RRT_planner::Planner::Planner(void)
     _sample_point.header.frame_id =
     _plan_path.header.frame_id = 
     _disk_occ_map.header.frame_id = 
+    _sum_occ_map.header.frame_id = 
     "map";
 
 
@@ -59,6 +62,7 @@ RRT_planner::Planner::Planner(void)
     _sample_point.header.stamp = 
     _plan_path.header.stamp = 
     _disk_occ_map.header.stamp = 
+    _sum_occ_map.header.stamp = 
     ros::Time::now();
 
      _start_pose_line_strip.ns = "start_pose_line_strip";
@@ -90,12 +94,17 @@ RRT_planner::Planner::Planner(void)
     /*
      * @brief The disk map configure
      */
-    _disk_occ_map.info.height = _map_height;
-    _disk_occ_map.info.width = _map_width;
+    _disk_occ_map.info.height =  _map_height;
+    _disk_occ_map.info.width  =  _map_width;
     _disk_occ_map.info.origin.position.x = _origin_x;
     _disk_occ_map.info.origin.position.y = _origin_y;
     _disk_occ_map.info.resolution = 1;
 
+    _sum_occ_map.info.height = _map_height;
+    _sum_occ_map.info.width  = _map_width;
+    _sum_occ_map.info.origin.position.x = _origin_x;
+    _sum_occ_map.info.origin.position.y = _origin_y;
+    _sum_occ_map.info.resolution = 1;
 
     /*
      * @brief The publisher
@@ -103,7 +112,8 @@ RRT_planner::Planner::Planner(void)
     line_marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 100);
     pose_array_pub  = n.advertise<geometry_msgs::PoseArray>("sampling_points", 100);
     path_state_pub  = n.advertise<nav_msgs::Path>("plan_path", 100);
-    grid_map_pub    = n.advertise<nav_msgs::OccupancyGrid>("circle_grid", 100);
+    disk_grid_map_pub = n.advertise<nav_msgs::OccupancyGrid>("disk_grid", 100);
+    sum_grid_map_pub    = n.advertise<nav_msgs::OccupancyGrid>("sum_grid", 100);
 
     /*
      * @brief The subscribe
@@ -145,10 +155,64 @@ void RRT_planner::Planner::Init(void)
     _ss = std::make_shared<og::SimpleSetup>(_si);
     _ss->setPlanner(std::make_shared<og::RRT_Bias>(_si));
 
-    DrawCircle(8);
-    std::vector<int8_t> map_temp(_disk_grid_map, _disk_grid_map + 400);
-    _disk_occ_map.data = map_temp;
+    _disk_array             = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
+    _obstacle_array         = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
+    _c_ifft_input_sum_array = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
+    _ifft_output_sum_array  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
 
+//    DrawCircle(2);
+//    for (uint16_t j = 0; j < 2 * _map_height; j++)
+//    {
+//        for (uint16_t i = 0; i < 2 * _map_width; i++)
+//        {
+//            if (i < _map_width && j < _map_height)
+//            {
+//                _extern_disk_grid_map[ j * 2 * _map_width + i] = _disk_grid_map[ j * _map_width + i ];
+//            }
+//            else
+//            {
+//                _extern_disk_grid_map[ j * 2 * _map_width + i] = 0;
+//            }
+//        }
+//    }
+//    for (uint16_t i = 0; i < _map_size; i++)
+//    {
+//        _disk_grid_map[i] = 0;
+//    }
+   
+    _disk_grid_map[992] = 100;
+    _disk_grid_map[993] = 100;
+    _disk_grid_map[960] = 100;
+    //_disk_grid_map[961] = 100;
+    _disk_grid_map[0] = 100;
+    _disk_grid_map[1] = 100;
+    _disk_grid_map[32] = 100;
+    //_disk_grid_map[33] = 1;
+    _disk_grid_map[30] = 100;
+    _disk_grid_map[31] = 100;
+    //_disk_grid_map[62] = 100;
+    _disk_grid_map[63] = 100;
+    _disk_grid_map[1022] = 100;
+    _disk_grid_map[1023] = 100;
+    //_disk_grid_map[990] = 1;
+    _disk_grid_map[991] = 100;
+    //_disk_grid_map[495] = 1;
+    //_disk_grid_map[494] = 1;
+    //_disk_grid_map[463] = 1;
+
+
+//    std::vector<int8_t> map_temp(_disk_grid_map, _disk_grid_map + 400);
+//    _disk_occ_map.data = map_temp;
+
+    fft_plan_create();
+    ifft_plan_create();
+
+    //fft2d(&_disk_grid_map[0], &_fft_disk_grid_map[0]);
+    fft2d(&_disk_grid_map[0], _disk_array);
+
+    //std::vector<int8_t> map_temp(_fft_disk_grid_map, _fft_disk_grid_map + 400);
+    //_disk_occ_map.data = map_temp;
+//    fft2d();
 }
 
 /*
@@ -263,6 +327,175 @@ void RRT_planner::Planner::DrawCircle(double r)
     }
 }
 
+int8_t RRT_planner::Planner::fft_plan_create(void)
+{
+    _d_input_array  = (double*)fftw_malloc(sizeof(double) *  _map_sum_size);
+    _c_output_array = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
+
+//    _fft2d_plan = fftw_plan_dft_2d(_map_width, _map_height, _input_array, _output_array, FFTW_FORWARD, FFTW_MEASURE);
+//    _fft2d_plan = fftw_plan_dft_1d(2 * _map_size, _input_array, _output_array, FFTW_FORWARD, FFTW_MEASURE);
+//    _fft2d_plan = fftw_plan_dft_r2c_1d(_map_sum_size, _d_input_array, _c_output_array, FFTW_MEASURE);
+    _fft2d_plan = fftw_plan_dft_r2c_2d( _map_width,  _map_height, _d_input_array, _c_output_array, FFTW_MEASURE);
+
+    return 0;
+}
+
+int8_t RRT_planner::Planner::ifft_plan_create(void)
+{
+    _c_inverse_input_array  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _map_sum_size);
+    _d_inverse_output_array = (double*)fftw_malloc(sizeof(double) * _map_sum_size);
+
+//    _ifft2d_plan = fftw_plan_dft_2d(_map_width, _map_height,  _inverse_input_array,  _inverse_output_array, FFTW_BACKWARD, FFTW_MEASURE);
+//    _ifft2d_plan = fftw_plan_dft_1d(2 * _map_size, _inverse_input_array, _inverse_output_array, FFTW_BACKWARD, FFTW_MEASURE);
+//    _ifft2d_plan = fftw_plan_dft_c2r_1d(_map_sum_size, _c_inverse_input_array, _d_inverse_output_array, FFTW_MEASURE);
+    _ifft2d_plan = fftw_plan_dft_c2r_2d( _map_width,  _map_height, _c_inverse_input_array, _d_inverse_output_array, FFTW_MEASURE);
+
+    return 0;
+}
+
+/*
+ * @brief The FFT
+ */
+//void RRT_planner::Planner::fft2d()
+//{
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        _input_array[i][0] = _disk_grid_map[i];
+//        _input_array[i][1] = 0;
+//    }
+//    
+//    fftw_execute(_fft2d_plan);
+//
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        _fft_disk_grid_map[i] = _output_array[i][0];
+//        ROS_INFO("fft grid value:%d",_fft_disk_grid_map[i]);
+//    }
+//
+//    std::vector<int8_t> map_temp(_fft_disk_grid_map, _fft_disk_grid_map + _map_size);
+//    _disk_occ_map.data = map_temp;
+//}
+//
+//
+//void RRT_planner::Planner::fft2d(int8_t *input_map, int8_t * output_map)
+//{
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        _input_array[i][0] = input_map[i];
+//        _input_array[i][1] = 0;
+//    }
+//    
+//    fftw_execute(_fft2d_plan);
+//
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        output_map[i] = _output_array[i][0];
+//        ROS_INFO("fft grid value:%d",output_map[i]);
+//    }
+//
+//}
+//
+void RRT_planner::Planner::fft2d(int8_t *input_map, fftw_complex *output_map)
+{
+//    for (uint16_t j = 0; j < 2 * _map_height; j++)
+//    {
+//        for (uint16_t i = 0; i < 2 * _map_width; i++)
+//        {
+//            if (i < _map_width && j < _map_height)
+//            {
+//                _d_input_array[ j * 2 * _map_width + i] = input_map[ j * _map_width + i ];
+//            }
+//            else
+//            {
+//                _d_input_array[ j * 2 * _map_width + i] = 0;
+//            }
+//        }
+//    }
+
+    for(uint16_t i=0; i < _map_size; i++)
+    {
+        ROS_INFO("input  grid value:%d",input_map[i]);
+        _d_input_array[i] = input_map[i];
+    }
+    for(uint16_t i=_map_size; i < _map_sum_size; i++)
+    {
+        _d_input_array[i] = 0.0;
+    }
+
+    fftw_execute(_fft2d_plan);
+
+    for(uint16_t i=0; i <  _map_sum_size; i++)
+    {
+        output_map[i][0] = _c_output_array[i][0];
+        output_map[i][1] = _c_output_array[i][1];
+//        ROS_INFO("fft grid value:%f",output_map[i][0]);
+    }
+}
+
+//void RRT_planner::Planner::ifft2d(int8_t *input_map, fftw_complex * output_map)
+//{
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        _inverse_input_array[i][0] = input_map[i];
+//        _inverse_input_array[i][1] = 0;
+//    }
+//    
+//    fftw_execute(_ifft2d_plan);
+//
+//    for(uint16_t i=0; i < _map_size; i++)
+//    {
+//        output_map[i][0] = _inverse_output_array[i][0];
+//        output_map[i][1] = _inverse_output_array[i][1];
+//        ROS_INFO("ifft grid value:%f",output_map[i][0]);
+//    }
+//}   
+//
+//void RRT_planner::Planner::ifft2d(fftw_complex *input_map, fftw_complex * output_map)
+//{
+//    for(uint16_t i=0; i < 2 * _map_size; i++)
+//    {
+//        _inverse_input_array[i][0] = input_map[i][0];
+//        _inverse_input_array[i][1] = input_map[i][1];
+//    }
+//    
+//    fftw_execute(_ifft2d_plan);
+//
+//    for(uint16_t i=0; i < 2 * _map_size; i++)
+//    {
+//        output_map[i][0] = _inverse_output_array[i][0] ;
+//        output_map[i][1] = _inverse_output_array[i][1] ;
+//        ROS_INFO("ifft grid value:%f",output_map[i][0]);
+//    }
+//}
+
+void RRT_planner::Planner::ifft2d(fftw_complex *input_map, int8_t* output_map)
+{
+     for(uint16_t i=0; i <  _map_sum_size; i++)
+    {
+        _c_inverse_input_array[i][0] = input_map[i][0];
+        _c_inverse_input_array[i][1] = input_map[i][1];
+    }
+    
+    fftw_execute(_ifft2d_plan);
+
+//    for (uint16_t j = 0; j <  _map_height; j++)
+//    {
+//        for (uint16_t i = 0; i < 2 * _map_width; i++)
+//        {
+//            if (i < _map_width && j < _map_height)
+//            {
+//                output_map[ j * _map_width + i] = _d_inverse_output_array[ j * 2 * _map_width + i ] / _map_sum_size > 1.0e-6 ? 100 : 0;
+//            }
+//        }
+//    }
+
+    for(uint16_t i=0; i < _map_sum_size; i++)
+    {
+        output_map[i] = _d_inverse_output_array[i] / _map_sum_size > 1.0e-6 ? 100 : 0;
+//        ROS_INFO("id:%d ifft grid value:%f", i, _d_inverse_output_array[i] / _map_sum_size);
+    }
+}
+
 /*
  * @brief the callback function for 
  */
@@ -270,14 +503,21 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
 {
      _map_height = map->info.height;   
      _map_width  = map->info.width;
-     
-//    for (uint16_t i = 0; i < _map_height; i++)
+    for (uint16_t i = 0; i < _map_height; i++)
+    {
+       for (uint16_t j = 0; j < _map_width; j++) 
+       {
+           ROS_INFO("%d ", map->data[i * _map_width + j]);
+           _obstacle_grid_map[i * _map_width + j] = map->data[i * _map_width + j] > 0 ? 100 : 0;
+       }
+    }
+
+//    for (uint16_t i = _map_size; i < 2 * _map_size; i++)
 //    {
-//       for (uint16_t j = 0; j < _map_width; j++) 
-//       {
-//           ROS_INFO("%d ", map->data[i * _map_width + j]);
-//       }
+//        _obstacle_grid_map[i] = 0;
 //    }
+    //fft2d(&_obstacle_grid_map[0], &_fft_obstacle_grid_map[0]);
+    fft2d(&_obstacle_grid_map[0], _obstacle_array);
 }
 
 /*
@@ -320,8 +560,25 @@ void RRT_planner::Planner::GoalPoseCallback(const geometry_msgs::PoseStamped &po
                                                  _goal_position.y,
                                                  _goal_position.yaw);
 
-    grid_map_pub.publish(_disk_occ_map);
-}
+    for (uint16_t i=0; i <  _map_sum_size; i++)
+    {
+        _c_ifft_input_sum_array[i][0] =  _disk_array[i][0] * _obstacle_array[i][0] - _disk_array[i][1] * _obstacle_array[i][1]; 
+        _c_ifft_input_sum_array[i][1] =  _disk_array[i][0] * _obstacle_array[i][1] + _disk_array[i][1] * _obstacle_array[i][0]; 
+    }
 
+    ifft2d(_c_ifft_input_sum_array, _ifft_sum_grid_map);
+//    ifft2d(_disk_array, _ifft_sum_grid_map);
+//    ifft2d(_obstacle_array, _ifft_sum_grid_map);
+
+
+    std::vector<int8_t> sum_map_temp(_ifft_sum_grid_map , _ifft_sum_grid_map + _map_size);
+//    std::vector<int8_t> map_temp(_obstacle_grid_map, _obstacle_grid_map + _map_size);
+    _sum_occ_map.data = sum_map_temp;
+    sum_grid_map_pub.publish(_sum_occ_map);
+
+    std::vector<int8_t> disk_map_temp(_disk_grid_map, _disk_grid_map +  _map_size);
+    _disk_occ_map.data = disk_map_temp;
+    disk_grid_map_pub.publish(_disk_occ_map);
+}
 
 

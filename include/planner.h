@@ -41,8 +41,9 @@ namespace og = ompl::geometric;
 /*
  * @brief the micro define
  */
-#define BOUNDARY_SIZE_X    (20)
-#define BOUNDARY_SIZE_Y    (20)
+#define BOUNDARY_SIZE_X    (32)
+#define BOUNDARY_SIZE_Y    (32)
+#define BOUNDARY_SIZE      (BOUNDARY_SIZE_X * BOUNDARY_SIZE_Y)
 
 typedef struct _position
 {
@@ -77,6 +78,23 @@ namespace RRT_planner
          * @brief Base on the circle draw the rectangle
          */
         void DrawCircle(double r);
+
+        /*
+         * @brief create the fft plan
+         */
+        int8_t fft_plan_create(void);
+        int8_t ifft_plan_create(void);
+
+        /*
+         * @brief The FFT base on the fftw3 lib
+         */
+//        void fft2d();
+//        void fft2d(int8_t *input_map, int8_t * output_map);
+        void fft2d(int8_t *input_map, fftw_complex * output_map);
+
+//        void ifft2d(int8_t *input_map, fftw_complex * output_map);
+//        void ifft2d(fftw_complex *input_map, fftw_complex * output_map);
+        void ifft2d(fftw_complex *input_map, int8_t* output_map);
 
         /*
          * @brief The callback function map receive
@@ -130,7 +148,12 @@ namespace RRT_planner
         /*
          * @brief The occupancy grid publisher
          */
-        ros::Publisher grid_map_pub;
+        ros::Publisher sum_grid_map_pub;
+        
+        /*
+         * @brief the disk map publisher
+         */
+        ros::Publisher disk_grid_map_pub;
 
         /*
          * @brief the start position line strip
@@ -160,7 +183,7 @@ namespace RRT_planner
         /*
          * @brief The obstacle occupancy map
          */
-        nav_msgs::OccupancyGrid _obstacle_occ_map;
+        nav_msgs::OccupancyGrid _sum_occ_map;
 
         /*
          * @brief The Space information
@@ -191,6 +214,8 @@ namespace RRT_planner
          */
         uint16_t _map_size;
 
+        uint16_t _map_sum_size;
+
         /*
          * @brief The origin x axis of map
          */
@@ -204,13 +229,29 @@ namespace RRT_planner
         /*
          * @brief Disk grid map
          */
-        int8_t _disk_grid_map[400];
+        int8_t _disk_grid_map[4 * BOUNDARY_SIZE];
+        int8_t _extern_disk_grid_map[4 * BOUNDARY_SIZE];
+        int8_t _fft_disk_grid_map[4 * BOUNDARY_SIZE];
 
+        fftw_complex *_disk_array;
         /*
          * @brief Obstacle grid map
          */
-        int8_t _obstacle_grid_map[400];
+        int8_t _obstacle_grid_map[4 * BOUNDARY_SIZE];
+        int8_t _fft_obstacle_grid_map[4 * BOUNDARY_SIZE];
 
+        fftw_complex *_obstacle_array;
+
+        /*
+         * @brief the sum
+         */
+        int8_t _fft_sum_grid_map[4 * BOUNDARY_SIZE];
+
+        fftw_complex *_c_ifft_input_sum_array;
+        fftw_complex *_ifft_output_sum_array;
+        double *_d_ifft_output_sum_array;
+
+        int8_t _ifft_sum_grid_map[4 * BOUNDARY_SIZE];
         /*
          * @brief start position
          */
@@ -222,6 +263,26 @@ namespace RRT_planner
          */
         Position _goal_position;
         bool     _goal_valid;
+
+        /*
+         * @brief The fft input array
+         */
+        double       *_d_input_array;
+        fftw_complex *_c_input_array;
+        fftw_complex *_c_inverse_input_array;
+
+        /*
+         * @brief The fft output array
+         */
+        double       *_d_output_array;
+        fftw_complex *_c_output_array;
+        double       *_d_inverse_output_array;
+
+        /*
+         * @brief The fft plan
+         */
+        fftw_plan _fft2d_plan;
+        fftw_plan _ifft2d_plan;
 
     };
 }
