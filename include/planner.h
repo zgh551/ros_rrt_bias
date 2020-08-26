@@ -83,19 +83,65 @@ namespace RRT_planner
          * @brief create the fft plan
          */
         int8_t fft_plan_create(void);
+
+        /*
+         * @brief create the ifft plan
+         */
         int8_t ifft_plan_create(void);
 
         /*
          * @brief The FFT base on the fftw3 lib
          */
-//        void fft2d();
-//        void fft2d(int8_t *input_map, int8_t * output_map);
-        void fft2d(int8_t *input_map, fftw_complex * output_map);
+        int8_t fft2d(const int8_t *input_map, fftw_complex * output_map);
 
-//        void ifft2d(int8_t *input_map, fftw_complex * output_map);
-//        void ifft2d(fftw_complex *input_map, fftw_complex * output_map);
-        void ifft2d(fftw_complex *input_map, int8_t* output_map);
+        /*
+         * @brief The IFFT base on the fftw3 lib
+         */
+        int8_t ifft2d(const fftw_complex *input_map, int8_t* output_map);
 
+        /*
+         * @brief the convolution of two map
+         */
+        int8_t convolution_2d(const int8_t *input_kernel_map, const int8_t *input_obstacle_map, int8_t *output_sum_map);
+
+        /*
+         * @brief the fft base on the fftw3 lib
+         * @param input_map: the input map
+         * @param input_map_width: the input map width
+         * @param input_map_height: the input map height
+         * @param output_map: the output frequency obmain map
+         * @param output_map_width: the width of output map
+         * @param output_map_height: the heigth of the output frequency obmain
+         * map
+         * @retun the result of fft 
+         */
+        int8_t fft2d(   const int8_t  *input_map, 
+                        const uint16_t input_map_width, 
+                        const uint16_t input_map_height, 
+                        const uint16_t cov_map_width, 
+                        const uint16_t cov_map_height, 
+                        fftw_complex  *output_cov_fft_map);
+
+        /*
+         * @brief
+         */
+        int8_t ifft2d(  const fftw_complex *input_fft_map, 
+                        const uint16_t cov_map_width, 
+                        const uint16_t cov_map_height, 
+                        const uint16_t output_map_width, 
+                        const uint16_t output_map_height,
+                        int8_t *output_map); 
+
+        /*
+         * @brief
+         */
+        int8_t convolution_2d(  const int8_t  *input_kernel_map,   
+                                const uint16_t input_kernel_width,   
+                                const uint16_t input_kernel_height, 
+                                const int8_t  *input_obstacle_map, 
+                                const uint16_t input_obstacle_width, 
+                                const uint16_t input_obstacle_height, 
+                                int8_t *output_sum_map);
         /*
          * @brief The callback function map receive
          */
@@ -181,9 +227,9 @@ namespace RRT_planner
         nav_msgs::OccupancyGrid _disk_occ_map;
 
         /*
-         * @brief The obstacle occupancy map
+         * @brief The convolution occupancy map
          */
-        nav_msgs::OccupancyGrid _sum_occ_map;
+        nav_msgs::OccupancyGrid _convolution_occ_map;
 
         /*
          * @brief The Space information
@@ -200,58 +246,106 @@ namespace RRT_planner
         og::SimpleSetupPtr _ss;
 
         /*
-         * @brief The height of map
+         * @brief The height of fft map
          */
-        uint16_t _map_height;
+        uint16_t _fft_map_height;
 
         /*
-         * @brief The width of map
+         * @brief The width of fft map
          */
-        uint16_t _map_width;        
+        uint16_t _fft_map_width;        
 
         /*
-         * @brief The size of map
+         * @brief The size of fft map
          */
-        uint16_t _map_size;
-
-        uint16_t _map_sum_size;
+        uint16_t _fft_map_size;
 
         /*
-         * @brief The origin x axis of map
+         * @brief the height of obstacle map 
          */
-        int16_t _origin_x;
+        uint16_t _obstacle_map_height;
 
         /*
-         * @brief The origin y axis of map
+         * @brief the width of source map
          */
-        int16_t _origin_y;
+        uint16_t _obstacle_map_width;
 
         /*
-         * @brief Disk grid map
+         * @brief the size of obstacle map
          */
-        int8_t _disk_grid_map[4 * BOUNDARY_SIZE];
-        int8_t _extern_disk_grid_map[4 * BOUNDARY_SIZE];
-        int8_t _fft_disk_grid_map[4 * BOUNDARY_SIZE];
-
-        fftw_complex *_disk_array;
-        /*
-         * @brief Obstacle grid map
-         */
-        int8_t _obstacle_grid_map[4 * BOUNDARY_SIZE];
-        int8_t _fft_obstacle_grid_map[4 * BOUNDARY_SIZE];
-
-        fftw_complex *_obstacle_array;
+        uint16_t _obstacle_map_size;
 
         /*
-         * @brief the sum
+         * @brief The origin x axis of obstacle map
          */
-        int8_t _fft_sum_grid_map[4 * BOUNDARY_SIZE];
+        int16_t _obstacle_origin_x;
 
-        fftw_complex *_c_ifft_input_sum_array;
-        fftw_complex *_ifft_output_sum_array;
-        double *_d_ifft_output_sum_array;
+        /*
+         * @brief the flag indicate obstacle map whether update
+         */
+        bool _is_map_update;
 
-        int8_t _ifft_sum_grid_map[4 * BOUNDARY_SIZE];
+        /*
+         * @brief The origin y axis of obstacle map
+         */
+        int16_t _obstacle_origin_y;
+
+        /*
+         * @brief the height of disk map 
+         */
+        uint16_t _disk_map_height;
+
+        /*
+         * @brief the width of disk map
+         */
+        uint16_t _disk_map_width;
+
+        /*
+         * @brief the size of disk map
+         */
+        uint16_t _disk_map_size;
+
+        /*
+         * @brief The origin x axis of disk map
+         */
+        int16_t _disk_origin_x;
+
+        /*
+         * @brief The origin y axis of disk map
+         */
+        int16_t _disk_origin_y;
+
+        /*
+         * @brief The point of disk grid map
+         */
+        int8_t *_disk_grid_map;
+
+        /*
+         * @brief the point of fft disk array
+         */
+        fftw_complex *_disk_fft_array;
+
+        /*
+         * @brief the point of obstacle grid map 
+         */
+        int8_t *_obstacle_grid_map;
+
+        /*
+         * @brief the point of the obstacle fft array
+         */
+        fftw_complex *_obstacle_fft_array;
+
+        /*
+         * @brief the convolution grid map 
+         */
+        int8_t *_convolution_grid_map;
+
+        /*
+         * @brief the frequency domain multiplication result as the input for
+         * ifft
+         */
+        fftw_complex *_c_convolution_ifft_input__array;
+
         /*
          * @brief start position
          */
@@ -281,7 +375,16 @@ namespace RRT_planner
         /*
          * @brief The fft plan
          */
+        fftw_plan _disk_fft2d_plan;
+
+        /*
+         * @brief the obstacle fft plan
+         */
         fftw_plan _fft2d_plan;
+
+        /*
+         * @brief the ifft of the frequency obmain conplex multiplication
+         */
         fftw_plan _ifft2d_plan;
 
     };
