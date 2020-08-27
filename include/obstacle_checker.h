@@ -16,7 +16,8 @@ namespace RRT_planner
             {
 
             }
-            
+
+            ObstacleChecker(const ob::SpaceInformationPtr &si, int8_t *obstacle_map, uint16_t width, uint16_t height); 
             /*
              * @brief judge the state whether is valid
              */
@@ -26,6 +27,14 @@ namespace RRT_planner
              * @brief calculate the clearance between states
              */
             double clearance(const ob::State *state) const override;
+        private:
+            int8_t *_obstacle_grid_map;
+
+            uint16_t _map_width;
+            uint16_t _map_height;
+
+            uint16_t _map_width_half;
+            uint16_t _map_height_half;
 
     };
 }
