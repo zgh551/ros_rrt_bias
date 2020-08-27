@@ -1,2 +1,28 @@
 # ros_rrt_bias
-the rrt test
+this reposity introduce a planner for vehicle parking, create the obstacle map using picture convolution algorithm.
+
+## depence
+
+- ROS
+- OMPL
+- fftw3
+- map_server
+
+this project test on the ubuntu20.04
+
+## obstacle map
+about the obstacle map create, using the vehicle footprint convolution with obstacle map to inflate the map.this algorithm reference the "Fast Collision Checking for Intelligent Vehicle Motion Planning"article.
+
+- the kernel picture as follow:
+
+![](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2015-02-36.png)
+
+- the obstacle map as follows:
+
+![](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2016-21-01.png)
+
+
+
+- the convolution of two picture as follows:
+
+![](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2016-22-17.png)
