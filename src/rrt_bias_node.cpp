@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
     while(ros::ok())
     {
-        m_planner.solve(10);
+        m_planner.solve(20);
         ros::spinOnce();
         r.sleep();
     }
