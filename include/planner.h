@@ -69,6 +69,8 @@ namespace RRT_planner
          */
         void Init(void);
 
+        void Init(int8_t *map, uint16_t map_width, uint16_t map_height);
+
         /*
          * @brief The solve of planner
          */

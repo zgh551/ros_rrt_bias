@@ -26,6 +26,12 @@
 #include <ompl/base/spaces/RealVectorBounds.h>
 #include <ompl/base/spaces/SE2StateSpace.h>
 
+#include <ompl/geometric/planners/rrt/BiTRRT.h>
+#include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/planners/rrt/InformedRRTstar.h>
+
+#include <ompl/geometric/planners/informedtrees/AITstar.h>
+
 /*
  * @brief System lib
  */
@@ -56,6 +62,16 @@ RRT_planner::Planner::Planner(void)
     _fft_map_width      = _obstacle_map_width  + _disk_map_width  - 1;
     _fft_map_height     = _obstacle_map_height + _disk_map_height - 1;
     _fft_map_size       = _fft_map_width * _fft_map_height;
+
+    /*
+     * @brief malloc the memory space for grid map
+     */
+    _disk_grid_map = (int8_t*)fftw_malloc(sizeof(int8_t) * _disk_map_size);
+
+    /*
+     * @brief base on the radius of circle produce the grid map
+     */
+    DrawCircle(2);
 
     // the line strip init
     _start_pose_line_strip.header.frame_id = 
@@ -149,8 +165,8 @@ void RRT_planner::Planner::Init(void)
     obstacle_boundary.setHigh(0, _obstacle_map_width  + _obstacle_origin_x);
     obstacle_boundary.setHigh(1, _obstacle_map_height + _obstacle_origin_y);
 
-    //_state_space = std::make_shared<ob::ReedsSheppStateSpace>(5.0);
-    _state_space = std::make_shared<ob::SE2StateSpace>();
+    _state_space = std::make_shared<ob::ReedsSheppStateSpace>(5.0);
+    //_state_space = std::make_shared<ob::SE2StateSpace>();
     _state_space->as<ob::SE2StateSpace>()->setBounds(obstacle_boundary);
 
     _si = std::make_shared<ob::SpaceInformation>(_state_space);
@@ -164,28 +180,37 @@ void RRT_planner::Planner::Init(void)
     /*
      * @brief malloc the memory space for fft 
      */
-    _disk_fft_array          = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
-    _obstacle_fft_array      = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
-    _c_convolution_ifft_input__array = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
-
-    /*
-     * @brief malloc the memory space for grid map
-     */
-    _disk_grid_map        = (int8_t*)fftw_malloc(sizeof(int8_t) * _disk_map_size);
-
-    /*
-     * @brief base on the radius of circle produce the grid map
-     */
-    DrawCircle(2);
-
-    /*
-     * @brief create the fft and ifft plan
-     */
-    //fft_plan_create();
-    //ifft_plan_create();
+//    _disk_fft_array          = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
+//    _obstacle_fft_array      = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
+//    _c_convolution_ifft_input__array = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) *  _fft_map_height * (_fft_map_width / 2 + 1));
 
 }
 
+void RRT_planner::Planner::Init(int8_t *map, uint16_t map_width, uint16_t map_height)
+{
+    ob::RealVectorBounds obstacle_boundary = ob::RealVectorBounds(2);
+
+     
+    obstacle_boundary.setLow(0, -map_width  / 2);
+    obstacle_boundary.setLow(1, -map_height / 2);
+
+    obstacle_boundary.setHigh(0, map_width  / 2);
+    obstacle_boundary.setHigh(1, map_height / 2);
+
+    _state_space = std::make_shared<ob::ReedsSheppStateSpace>(5.0);
+    //_state_space = std::make_shared<ob::SE2StateSpace>();
+    _state_space->as<ob::SE2StateSpace>()->setBounds(obstacle_boundary);
+
+    _si = std::make_shared<ob::SpaceInformation>(_state_space);
+    _si->setStateValidityChecker(std::make_shared<RRT_planner::ObstacleChecker>(_si, map, map_width, map_height));
+    _si->setStateValidityCheckingResolution(0.03);
+    _si->setup();
+
+    _ss = std::make_shared<og::SimpleSetup>(_si);
+    _ss->setPlanner(std::make_shared<og::RRT_Bias>(_si));
+   //_ss->setPlanner(std::make_shared<og::BiTRRT>(_si));
+
+}
 /*
  * @brief The solve function
  */
@@ -619,7 +644,9 @@ int8_t RRT_planner::Planner::convolution_2d(const int8_t *input_kernel_map,   co
  */
 void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
 {
-    
+    /*
+     * @brief obstacle map size update
+     */
     _obstacle_map_height = map->info.height;   
     _obstacle_map_width  = map->info.width;
     _obstacle_map_size   = _obstacle_map_width * _obstacle_map_height;
@@ -674,6 +701,11 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
     std::vector<int8_t> disk_map_temp(_disk_grid_map, _disk_grid_map + _disk_map_size );
     _disk_occ_map.data = disk_map_temp;
     disk_grid_map_pub.publish(_disk_occ_map);
+
+    /*
+     * @brief init the planner space and obstacle map
+     */
+    Init(_convolution_grid_map, _obstacle_map_width, _obstacle_map_height);
 }
 
 /*
@@ -715,31 +747,6 @@ void RRT_planner::Planner::GoalPoseCallback(const geometry_msgs::PoseStamped &po
     ROS_INFO("goal position x:%f, y:%f, yaw:%f", _goal_position.x,
                                                  _goal_position.y,
                                                  _goal_position.yaw);
-
-    /*
-     * @brief the fft of disk
-     */
-    //fft2d(_disk_grid_map, _disk_fft_array);
-
-    /*
-     * @brief the fft of obstacle map
-     */
-    //fft2d(_obstacle_grid_map, _obstacle_fft_array);
-
-    /*
-     * @brief Frequence domain complex multiplication
-     */
-//    for (uint16_t i=0; i < _fft_map_height * (_fft_map_width / 2 + 1); i++)
-//    {
-//        _c_convolution_ifft_input__array[i][0] =  _disk_fft_array[i][0] * _obstacle_fft_array[i][0] - _disk_fft_array[i][1] * _obstacle_fft_array[i][1]; 
-//        _c_convolution_ifft_input__array[i][1] =  _disk_fft_array[i][0] * _obstacle_fft_array[i][1] + _disk_fft_array[i][1] * _obstacle_fft_array[i][0]; 
-//    }
-
-    /*
-     * @brief the ifft for convolution result
-     */
-//    ifft2d(_c_convolution_ifft_input__array, _convolution_grid_map);
-
 }
 
 
