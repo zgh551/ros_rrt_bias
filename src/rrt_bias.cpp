@@ -31,6 +31,9 @@ void ompl::geometric::RRT_Bias::setup()
     tools::SelfConfig sc(si_, getName());
     sc.configurePlannerRange(maxDistance_);
 
+    maxDistance_ = 1;
+    ROS_INFO("max distance:%f", maxDistance_);
+
     if(!nn_)
     {
         nn_.reset(tools::SelfConfig::getDefaultNearestNeighbors<Motion *>(this));
