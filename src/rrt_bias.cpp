@@ -31,7 +31,7 @@ void ompl::geometric::RRT_Bias::setup()
     tools::SelfConfig sc(si_, getName());
     sc.configurePlannerRange(maxDistance_);
 
-    maxDistance_ = 1;
+    maxDistance_ = 5;
     ROS_INFO("max distance:%f", maxDistance_);
 
     if(!nn_)
@@ -114,7 +114,7 @@ ompl::base::PlannerStatus ompl::geometric::RRT_Bias::solve(const base::PlannerTe
 
     while (!ptc)
     {
-        time_r.sleep();
+        //time_r.sleep();
         // sample random state
         if ((goal_smp != nullptr) && rng_.uniform01() < goalBias_ && goal_smp->canSample())
         {
