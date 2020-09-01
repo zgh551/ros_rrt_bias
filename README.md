@@ -1,7 +1,7 @@
 # ros_rrt_bias
 this reposity introduce a planner for vehicle parking, create the obstacle map using picture convolution algorithm.
 
-## depence
+## dependent lib
 
 - ROS
 - OMPL
@@ -10,8 +10,8 @@ this reposity introduce a planner for vehicle parking, create the obstacle map u
 
 this project test on the ubuntu20.04
 
-## obstacle map
-about the obstacle map create, using the vehicle footprint convolution with obstacle map to inflate the map.this algorithm reference the "Fast Collision Checking for Intelligent Vehicle Motion Planning"article.
+## obstacle map inflate
+we use the vehicle footprint convolution with obstacle map to inflate the obstacle map.this algorithm reference the "Fast Collision Checking for Intelligent Vehicle Motion Planning"article.
 
 - the kernel picture as follow:
 

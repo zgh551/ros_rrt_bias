@@ -37,7 +37,7 @@
  */
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
-
+//using namespace math;
 /*
  * @brief the micro define
  */
@@ -137,13 +137,14 @@ namespace RRT_planner
         /*
          * @brief
          */
+        /*
         int8_t convolution_2d(  const int8_t  *input_kernel_map,   
                                 const uint16_t input_kernel_width,   
                                 const uint16_t input_kernel_height, 
                                 const int8_t  *input_obstacle_map, 
                                 const uint16_t input_obstacle_width, 
                                 const uint16_t input_obstacle_height, 
-                                int8_t *output_sum_map);
+                                int8_t *output_sum_map);*/
         /*
          * @brief The callback function map receive
          */
@@ -248,21 +249,6 @@ namespace RRT_planner
         og::SimpleSetupPtr _ss;
 
         /*
-         * @brief The height of fft map
-         */
-        uint16_t _fft_map_height;
-
-        /*
-         * @brief The width of fft map
-         */
-        uint16_t _fft_map_width;        
-
-        /*
-         * @brief The size of fft map
-         */
-        uint16_t _fft_map_size;
-
-        /*
          * @brief the height of obstacle map 
          */
         uint16_t _obstacle_map_height;
@@ -283,14 +269,14 @@ namespace RRT_planner
         int16_t _obstacle_origin_x;
 
         /*
-         * @brief the flag indicate obstacle map whether update
-         */
-        bool _is_map_update;
-
-        /*
          * @brief The origin y axis of obstacle map
          */
         int16_t _obstacle_origin_y;
+
+        /*
+         * @brief the flag indicate obstacle map whether update
+         */
+        bool _is_map_update;
 
         /*
          * @brief the height of disk map 
@@ -323,30 +309,14 @@ namespace RRT_planner
         int8_t *_disk_grid_map;
 
         /*
-         * @brief the point of fft disk array
-         */
-        fftw_complex *_disk_fft_array;
-
-        /*
          * @brief the point of obstacle grid map 
          */
         int8_t *_obstacle_grid_map;
 
         /*
-         * @brief the point of the obstacle fft array
-         */
-        fftw_complex *_obstacle_fft_array;
-
-        /*
          * @brief the convolution grid map 
          */
         int8_t *_convolution_grid_map;
-
-        /*
-         * @brief the frequency domain multiplication result as the input for
-         * ifft
-         */
-        fftw_complex *_c_convolution_ifft_input__array;
 
         /*
          * @brief start position
@@ -359,36 +329,6 @@ namespace RRT_planner
          */
         Position _goal_position;
         bool     _goal_valid;
-
-        /*
-         * @brief The fft input array
-         */
-        double       *_d_input_array;
-        fftw_complex *_c_input_array;
-        fftw_complex *_c_inverse_input_array;
-
-        /*
-         * @brief The fft output array
-         */
-        double       *_d_output_array;
-        fftw_complex *_c_output_array;
-        double       *_d_inverse_output_array;
-
-        /*
-         * @brief The fft plan
-         */
-        fftw_plan _disk_fft2d_plan;
-
-        /*
-         * @brief the obstacle fft plan
-         */
-        fftw_plan _fft2d_plan;
-
-        /*
-         * @brief the ifft of the frequency obmain conplex multiplication
-         */
-        fftw_plan _ifft2d_plan;
-
     };
 }
 
