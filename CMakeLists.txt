@@ -21,12 +21,14 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/planner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/obstacle_checker.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/visualize.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/convolution.cpp
     )
 set(HEADERS 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/rrt_bias.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/planner.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/obstacle_checker.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/visualize.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/convolution.h
     )
 
 
