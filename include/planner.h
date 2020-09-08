@@ -4,6 +4,7 @@
 /*
  * @brief The ROS related header file
  */
+#include "distance_map.h"
 #include <ros/publisher.h>
 #include <ros/ros.h>
 #include <ros/node_handle.h>
@@ -32,6 +33,8 @@
 #include <ompl/base/spaces/ReedsSheppStateSpace.h>
 
 #include <fftw3.h>
+
+#include "../include/distance_map.h"
 /*
  * @brief the namespace
  */
@@ -329,6 +332,8 @@ namespace RRT_planner
          */
         Position _goal_position;
         bool     _goal_valid;
+
+        map::DistanceMap _distance_map;
     };
 }
 

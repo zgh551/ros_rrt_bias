@@ -353,6 +353,21 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
     }
     ROS_INFO("grid map update width:%d,height:%d", _obstacle_map_width, _obstacle_map_height);
 
+    int8_t *test_grid_map  = (int8_t*)fftw_malloc(sizeof(int8_t) * 20);
+    double *output_test_grid_map  = (double*)fftw_malloc(sizeof(double) * 20);
+
+    for(uint8_t j = 0; j < 4; j++)
+    {
+        for (uint8_t i = 0; i < 5; i++)
+        {
+            test_grid_map[i + j * 5] = 0;
+        }
+    }
+    test_grid_map[5] = 100;
+    test_grid_map[10] = 100;
+    test_grid_map[16] = 100;
+
+    _distance_map.DistanceMapUpdate(5, 4, test_grid_map, output_test_grid_map);
     ros::Time begin = ros::Time::now();
 //    convolution_2d(_disk_grid_map, _obstacle_grid_map, _convolution_grid_map);
     Common::Convolution::convolution_2d( _disk_grid_map, _disk_map_width, _disk_map_height,
