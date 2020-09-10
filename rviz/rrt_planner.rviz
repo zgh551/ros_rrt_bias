@@ -6,9 +6,6 @@ Panels:
       Expanded:
         - /Grid1
         - /Grid1/Offset1
-        - /Marker1/Status1
-        - /Map1/Status1
-        - /Map3/Status1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz/Selection
@@ -60,8 +57,7 @@ Visualization Manager:
       Marker Topic: /visualization_marker
       Name: Marker
       Namespaces:
-        goal_pose_line_strip: true
-        start_pose_line_strip: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -160,12 +156,12 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/Axes
-      Enabled: false
+      Enabled: true
       Length: 1
       Name: Axes
       Radius: 0.10000000149011612
       Reference Frame: <Fixed Frame>
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
@@ -176,6 +172,16 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: false
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /distance_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -213,10 +219,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 6.446115493774414
+      Scale: 10.66791820526123
       Target Frame: <Fixed Frame>
-      X: -2.652381181716919
-      Y: -9.065556526184082
+      X: 4.4308247566223145
+      Y: 0.04534474015235901
     Saved: ~
 Window Geometry:
   Displays:
