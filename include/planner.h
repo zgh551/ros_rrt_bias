@@ -201,6 +201,11 @@ namespace RRT_planner
          * @brief The occupancy grid publisher
          */
         ros::Publisher sum_grid_map_pub;
+
+        /*
+         * @brief the distance map publisher
+         */
+        ros::Publisher distance_map_pub;
         
         /*
          * @brief the disk map publisher
@@ -236,6 +241,11 @@ namespace RRT_planner
          * @brief The convolution occupancy map
          */
         nav_msgs::OccupancyGrid _convolution_occ_map;
+
+        /*
+         * @brief the distance map
+         */
+        nav_msgs::OccupancyGrid _diatance_occ_map;
 
         /*
          * @brief The Space information

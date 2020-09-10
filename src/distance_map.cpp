@@ -116,19 +116,19 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("distance is infine");
+                       // ROS_INFO("distance is infine");
                     }
                 }
                 else
                 {
-                    ROS_INFO("index out the boundary");
+                   // ROS_INFO("index out the boundary");
                 }
             } // end k
 
             // get the min distance and update the map
             if(d.size() == 0)
             {
-                ROS_INFO("no valid distance!");
+                //ROS_INFO("no valid distance!");
             }
             else if (1 == d.size())
             {
@@ -170,7 +170,7 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("M1:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
+                        //ROS_INFO("M1:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
                     }
                 }
             }
@@ -196,19 +196,19 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("distance is infine");
+                        //ROS_INFO("distance is infine");
                     }
                 }
                 else
                 {
-                    ROS_INFO("index out the boundary");
+                    //ROS_INFO("index out the boundary");
                 }
             } // end k
 
             // get the min distance and update the map
             if (0 == d.size())
             {
-                ROS_INFO("no valid distance!");
+                //ROS_INFO("no valid distance!");
             }
             else if (1 == d.size())
             {
@@ -250,22 +250,23 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("M2:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
+                  //      ROS_INFO("M2:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
                     }
                 }
             }
             /// end of mask M2/// 
         }// end line
     }// end column
-        for (uint16_t j = 0; j < height; j++)
+    /*
+    for (uint16_t j = 0; j < height; j++)
+    {
+        for(uint16_t i = 0; i < width; i++)
         {
-            for(uint16_t i = 0; i < width; i++)
-            {
-                std::cout << "(" << init_map[i + j * width].getX() << "," << init_map[i + j * width].getY() << ") ";
-            }
-            std::cout << "\r\n";
+            std::cout << "(" << init_map[i + j * width].getX() << "," << init_map[i + j * width].getY() << ") ";
         }
-
+        std::cout << "\r\n";
+    }
+    */
 
     for (int16_t j = height - 1; j >= 0; j--)
     {
@@ -288,19 +289,19 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("distance is infine");
+                    //    ROS_INFO("distance is infine");
                     }
                 }
                 else
                 {
-                    ROS_INFO("index out the boundary");
+                   // ROS_INFO("index out the boundary");
                 }
             } // end k
 
             // get the min distance and update the map
             if(d.size() == 0)
             {
-                ROS_INFO("no valid distance!");
+           //     ROS_INFO("no valid distance!");
             }
             else if (1 == d.size())
             {
@@ -342,7 +343,7 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("M3:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
+             //           ROS_INFO("M3:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
                     }
                 }
             }
@@ -368,19 +369,19 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("distance is infine");
+               //         ROS_INFO("distance is infine");
                     }
                 }
                 else
                 {
-                    ROS_INFO("index out the boundary");
+                 //   ROS_INFO("index out the boundary");
                 }
             } // end k
 
             // get the min distance and update the map
             if (0 == d.size())
             {
-                ROS_INFO("no valid distance!");
+                //ROS_INFO("no valid distance!");
             }
             else if (1 == d.size())
             {
@@ -422,7 +423,7 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
                     }
                     else
                     {
-                        ROS_INFO("M4:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
+                  //      ROS_INFO("M4:the distance is too big! disatnce:%f, min_distance:%f", (*iter).first, min_distance);
                     }
                 }
             }
@@ -432,7 +433,7 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
         }// end line
         //std::cout << "\r\n";
     }// end column
-    
+    /*
     for (uint16_t j = 0; j < height; j++)
     {
         for(uint16_t i = 0; i < width; i++)
@@ -442,7 +443,7 @@ int8_t map::DistanceMap::DistanceMapUpdate(uint16_t width, uint16_t height, int8
         }
         std::cout << "\r\n";
     }
-    
+    */
     delete[] init_map;
     return 0;
 }
