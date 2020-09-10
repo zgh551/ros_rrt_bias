@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find
+    rrt_bias)/rviz/rrt_planner.rviz" />
+
+    <!-- launch rrt base node -->
+    <node pkg="rrt_bias" type="rrt_bias_node" name="rrt_bias" output="screen"
+    required="true"/>
+
+    <!--node pkg="map_server" type="map_server" name="map_server" output="screen"
+    required="true" args="$(find rrt_bias)/maps/map.yaml" /-->
+</launch>
