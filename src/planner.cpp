@@ -15,6 +15,7 @@
 #include <nav_msgs/Path.h>
 #include <ompl/base/ScopedState.h>
 #include <ompl/geometric/PathGeometric.h>
+#include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ros/time.h>
 #include <tf/transform_datatypes.h>
 
@@ -201,8 +202,9 @@ void RRT_planner::Planner::Init(int8_t *map, uint16_t map_width, uint16_t map_he
     _si->setup();
 
     _ss = std::make_shared<og::SimpleSetup>(_si);
-    _ss->setPlanner(std::make_shared<og::RRT_Bias>(_si));
+    //_ss->setPlanner(std::make_shared<og::RRT_Bias>(_si));
    //_ss->setPlanner(std::make_shared<og::BiTRRT>(_si));
+   _ss->setPlanner(std::make_shared<og::RRTstar>(_si));
 
 }
 /*
