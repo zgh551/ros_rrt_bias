@@ -212,7 +212,7 @@ void RRT_planner::Planner::Init(int8_t *map, uint16_t map_width, uint16_t map_he
  */
 void RRT_planner::Planner::solve(const double time)
 {
-    if (_start_valid && _goal_valid)
+    if (_start_valid && _goal_valid && _is_map_update)
     {
         ob::ScopedState<> start_state(_state_space);
         ob::ScopedState<> goal_state(_state_space);
@@ -270,10 +270,14 @@ void RRT_planner::Planner::solve(const double time)
         }
         else 
         {
-            
+            ROS_INFO("plan faile!");
         }
         _ss->clear();
         _goal_valid = false;
+    }
+    else
+    {
+        //ROS_INFO("map no update or without start or goal point!"); 
     }
 }
 
@@ -355,7 +359,7 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
     _diatance_occ_map.info.origin.position.x = _obstacle_origin_x;
     _diatance_occ_map.info.origin.position.y = _obstacle_origin_y;
 
-
+    // obstacle map update 
     for (uint16_t i = 0; i < _obstacle_map_height; i++)
     {
         for (uint16_t j = 0; j < _obstacle_map_width; j++) 
@@ -367,35 +371,27 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
 
     double *output_test_grid_map  = (double*)fftw_malloc(sizeof(double) * _obstacle_map_size);
     int8_t *distance_grid_map = (int8_t*)fftw_malloc(sizeof(int8_t) * _obstacle_map_size); 
-/*
-    int8_t *test_grid_map  = (int8_t*)fftw_malloc(sizeof(int8_t) * 20);
-    double *output_test_grid_map  = (double*)fftw_malloc(sizeof(double) * 20);
 
-    for(uint8_t j = 0; j < 4; j++)
-    {
-        for (uint8_t i = 0; i < 5; i++)
-        {
-            test_grid_map[i + j * 5] = 0;
-        }
-    }
-    test_grid_map[5] = 100;
-    test_grid_map[10] = 100;
-    test_grid_map[16] = 100;
-*/
-    _distance_map.DistanceMapUpdate(_obstacle_map_width, _obstacle_map_height, _obstacle_grid_map, output_test_grid_map);
-    for (uint16_t i = 0; i < _obstacle_map_size; i++)
-    {
-        distance_grid_map[i] = static_cast<int8_t>(output_test_grid_map[i] * 10);
-    }
+    
+    // calculate the time begin
     ros::Time begin = ros::Time::now();
+    // map convolution
 //    convolution_2d(_disk_grid_map, _obstacle_grid_map, _convolution_grid_map);
     Common::Convolution::convolution_2d( _disk_grid_map, _disk_map_width, _disk_map_height,
                                        _obstacle_grid_map,_obstacle_map_width, _obstacle_map_height, 
                                        _convolution_grid_map);
     
+    // the end of calculate time
     double pro_time = (ros::Time::now() - begin).toSec();
-
     ROS_INFO("convolution time %f", pro_time);
+
+    // distance map update
+    _distance_map.DistanceMapUpdate(_obstacle_map_width, _obstacle_map_height, _obstacle_grid_map, output_test_grid_map);
+    for (uint16_t i = 0; i < _obstacle_map_size; i++)
+    {
+        distance_grid_map[i] = static_cast<int8_t>(output_test_grid_map[i] * 10);
+    }
+
     /*
      * @brief the convolution result map show
      */
@@ -403,19 +399,17 @@ void RRT_planner::Planner::MapCallback(const nav_msgs::OccupancyGrid::Ptr map)
     _convolution_occ_map.data = convolution_map_temp;
     sum_grid_map_pub.publish(_convolution_occ_map);
 
+    // the distance map show
     std::vector<int8_t> distance_temp(distance_grid_map , distance_grid_map + _obstacle_map_size);
     _diatance_occ_map.data = distance_temp;
     distance_map_pub.publish(_diatance_occ_map);
-    /*
-     * @brief the disk map show
-     */
+
+    // the disk map show
     std::vector<int8_t> disk_map_temp(_disk_grid_map, _disk_grid_map + _disk_map_size );
     _disk_occ_map.data = disk_map_temp;
     disk_grid_map_pub.publish(_disk_occ_map);
 
-    /*
-     * @brief init the planner space and obstacle map
-     */
+    // init the planner space and obstacle map
     Init(_convolution_grid_map, _obstacle_map_width, _obstacle_map_height);
 }
 
