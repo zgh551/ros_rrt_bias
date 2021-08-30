@@ -21,7 +21,7 @@ $ catkin_make
 $ roslaunch src/ros_rrt_bias/luanch/rrt_base_test.launch
 ```
 after that command, you will see follw window:
-![rviz_init](https://i.loli.net/2020/11/03/7Ag6BOTIxUzJVki.png)
+<img src="https://i.loli.net/2020/11/03/7Ag6BOTIxUzJVki.png" alt="rviz_init" style="zoom: 50%;" />
 
 3. using the map_server to load the map file
 
@@ -30,7 +30,8 @@ $ rosrun map_server map_server src/ros_rrt_bias/maps/map_test1.yaml
 ```
 in `maps`folder ,with tree test `yaml`file.
 
-![rviz_map_load](https://i.loli.net/2020/11/03/GFa4ye2A6ukmxql.png)
+<img src="https://i.loli.net/2020/11/03/GFa4ye2A6ukmxql.png" alt="rviz_map_load" style="zoom:50%;" />
+
 ## Related function introduction
 this project contain some function as follow:
 ### obstacle map inflate
@@ -38,27 +39,25 @@ we use the vehicle footprint convolution with obstacle map to inflate the obstac
 
 - the kernel picture as follow:
 
-![kernel picture](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2015-02-36.png)
+<img src="https://i.loli.net/2021/08/30/b1wYoaAmj9yIcq2.png" alt="kernel picture" style="zoom:67%;" />
 
 - the obstacle map as follows:
 
-![obstacle picture](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2016-21-01.png)
-
-
+<img src="https://i.loli.net/2021/08/30/sfemwuWlR4ZTXYO.png" alt="obstacle picture" style="zoom: 67%;" />
 
 - the convolution of two picture as follows:
 
-![convolution result](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-08-27%2016-22-17.png)
+<img src="https://i.loli.net/2021/08/30/2tIevPBaHUmOpL1.png" alt="convolution result" style="zoom:67%;" />
 
 ### distance map
 
 the grip map as follow:
 
-![grid map](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-09-21%2019-23-01.png)
+<img src="https://i.loli.net/2021/08/30/MnNhpkfHexiRIsL.png" alt="grid map" style="zoom:67%;" />
 
 - using the way of  "Fast 2-D Distance Transformations"paper ,calculate the distance map as follow:
 
-![distance map](https://raw.githubusercontent.com/zgh551/FigureBed/master/img/Screenshot%20from%202020-09-21%2019-22-32.png)
+<img src="https://i.loli.net/2021/08/30/3KjQCh1sqJkLHI2.png" alt="distance map" style="zoom: 67%;" />
 
 the relative-coordinates threshold set to zero.
 
